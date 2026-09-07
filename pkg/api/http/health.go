@@ -21,6 +21,17 @@ func (s *Server) healthzHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusServiceUnavailable)
 }
 
+func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
+	if atomic.LoadInt32(&healthy) == 1 {
+		s.JSONResponse(w, r, map[string]string{
+			"status":     "ok",
+			"commit_sha": previewCommitSHA(),
+		})
+		return
+	}
+	w.WriteHeader(http.StatusServiceUnavailable)
+}
+
 // Readyz godoc
 // @Summary Readiness check
 // @Description used by Kubernetes readiness probe

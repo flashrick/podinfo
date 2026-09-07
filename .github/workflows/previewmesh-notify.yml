@@ -1,0 +1,24 @@
+name: Notify PreviewMesh
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, closed]
+permissions: {}
+jobs:
+  notify:
+    if: github.event.pull_request.head.repo.id == github.event.repository.id
+    runs-on: ubuntu-latest
+    steps:
+      # Metadata relay only. Never check out or execute source/PR code here.
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ secrets.PREVIEWMESH_DISPATCH_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'flashrick', repo: 'PreviewMesh',
+              workflow_id: 'preview.yml', ref: 'main',
+              inputs: {
+                repository_id: String(context.payload.repository.id),
+                source_repository: context.payload.repository.full_name,
+                pr_number: String(context.payload.pull_request.number)
+              }
+            });

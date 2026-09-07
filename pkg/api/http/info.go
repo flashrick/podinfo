@@ -2,12 +2,23 @@ package http
 
 import (
 	"net/http"
+	"os"
 
 	"runtime"
 	"strconv"
 
 	"github.com/stefanprodan/podinfo/pkg/version"
 )
+
+func previewCommitSHA() string {
+	if sha := os.Getenv("PREVIEW_COMMIT_SHA"); sha != "" {
+		return sha
+	}
+	if version.REVISION != "" {
+		return version.REVISION
+	}
+	return "unknown"
+}
 
 // Info godoc
 // @Summary Runtime information
@@ -25,6 +36,8 @@ func (s *Server) infoHandler(w http.ResponseWriter, r *http.Request) {
 		Hostname:     s.config.Hostname,
 		Version:      version.VERSION,
 		Revision:     version.REVISION,
+		App:          "podinfo",
+		CommitSHA:    previewCommitSHA(),
 		Logo:         s.config.UILogo,
 		Color:        s.config.UIColor,
 		Message:      s.config.UIMessage,
@@ -42,6 +55,8 @@ type RuntimeResponse struct {
 	Hostname     string `json:"hostname"`
 	Version      string `json:"version"`
 	Revision     string `json:"revision"`
+	App          string `json:"app"`
+	CommitSHA    string `json:"commit_sha"`
 	Color        string `json:"color"`
 	Logo         string `json:"logo"`
 	Message      string `json:"message"`
